@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #ticTacToe {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 24px;
+            text-align: center;
+            vertical-align: middle;
+            border: 2px solid #ccc;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background-color: #f2f2f2;
+        }
+
+        #options {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="ticTacToe"></div>
+    <div id="options">
+        <button onclick="startGame('friend')">Play with Friend</button>
+        <button onclick="startGame('ai')">Play with AI</button>
+    </div>
+
+    <script>
+        const ticTacToe = document.getElementById("ticTacToe");
+        const options = document.getElementById("options");
+        let currentPlayer = "X";
+        let gameBoard = ["", "", "", "", "", "", "", "", ""];
+        let gameMode;
+
+        function createCell(index) {
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.dataset.index = index;
+            cell.addEventListener("click", handleCellClick);
+            ticTacToe.appendChild(cell);
+        }
+
+        function initializeGame() {
+            ticTacToe.innerHTML = "";
+            gameBoard = ["", "", "", "", "", "", "", "", ""];
+            currentPlayer = "X";
+            for (let i = 0; i < 9; i++) {
+                createCell(i);
+            }
+        }
+
+        function startGame(mode) {
+            gameMode = mode;
+            options.style.display = "none";
+            initializeGame();
+
+            // If AI is starting, make the first move
+            if (gameMode === "ai" && currentPlayer === "O") {
+                makeAIMove();
+            }
+        }
+
+        function handleCellClick(event) {
+            const index = event.target.dataset.index;
+
+            if (gameBoard[index] === "" && !checkWinner() && !isBoardFull()) {
+                gameBoard[index] = currentPlayer;
+                event.target.textContent = currentPlayer;
+
+                if (checkWinner()) {
+                    alert(`${currentPlayer === "X" ? "Player 1" : "Player 2"} wins!`);
+                    options.style.display = "block";
+                } else if (isBoardFull()) {
+                    alert("It's a draw!");
+                    options.style.display = "block";
+                } else {
+                    currentPlayer = currentPlayer === "X" ? "O" : "X";
+
+                    // If it's AI's turn, make a move
+                    if (gameMode === "ai" && currentPlayer === "O") {
+                        makeAIMove();
+                    }
+                }
+            }
+        }
+
+        function makeAIMove() {
+            const emptyCells = gameBoard.reduce((acc, cell, index) => {
+                if (cell === "") {
+                    acc.push(index);
+                }
+                return acc;
+            }, []);
+
+            if (emptyCells.length > 0) {
+                const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                gameBoard[randomIndex] = "O";
+                document.querySelector(`[data-index='${randomIndex}']`).textContent = "O";
+
+                if (checkWinner()) {
+                    alert("AI wins!");
+                    options.style.display = "block";
+                } else if (isBoardFull()) {
+                    alert("It's a draw!");
+                    options.style.display = "block";
+                } else {
+                    currentPlayer = "X";
+                }
+            }
+        }
+
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6]              // Diagonals
+            ];
+
+            for (const combination of winningCombinations) {
+                const [a, b, c] = combination;
+                if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function isBoardFull() {
+            return gameBoard.every(cell => cell !== "");
+        }
+    </script>
+</body>
+</html>
